@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinLedger — Personal Finance & Expense Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <aside class="sidebar-rail">
+      <div class="brand-header">
+        <div class="brand-logo-mark">F</div>
+        <div>
+          <div class="brand-name">FinLedger</div>
+          <div class="brand-subtext">Command Center</div>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-section-title">Overview</li>
+        <li>
+          <a href="/" class="nav-item-link active" data-view="dashboard">
+            <span>📊</span> Dashboard
+          </a>
+        </li>
+
+        <li class="nav-section-title">Money</li>
+        <li>
+          <a href="/transactions" class="nav-item-link" data-view="transactions">
+            <span>💳</span> Transactions
+          </a>
+        </li>
+
+        <li class="nav-section-title">Planning</li>
+        <li>
+          <a href="/budgets" class="nav-item-link" data-view="budgets">
+            <span>🎯</span> Budgets
+          </a>
+        </li>
+        <li>
+          <a href="/goals" class="nav-item-link" data-view="goals">
+            <span>🏆</span> Savings Goals
+          </a>
+        </li>
+
+        <li class="nav-section-title">Insights</li>
+        <li>
+          <a href="/analytics" class="nav-item-link" data-view="analytics">
+            <span>📈</span> Analytics
+          </a>
+        </li>
+        <li>
+          <a href="/reports" class="nav-item-link" data-view="reports">
+            <span>📄</span> Reports
+          </a>
+        </li>
+      </ul>
+
+      <button class="quick-act-btn" onclick="openQuickActionModal()">
+        <span>+</span> Quick Action
+      </button>
+    </aside>
+
+    <main class="workspace-content">
+      
+      <div id="toastWrap" class="toast-wrap"></div>
+
+      <header class="workspace-header">
+        <div class="greeting-text">
+          <h1>FinLedger Workspace</h1>
+          <p>Financial command center and expense management</p>
+        </div>
+
+        <div class="header-right-actions">
+          <button class="notif-bell-btn" onclick="toggleNotificationDrawer()" title="Notifications">
+            🔔
+            <span class="notif-badge-dot"></span>
+          </button>
+          
+          <div id="notifDrawer" class="notif-drawer">
+            <div style="padding:0.75rem 1rem; font-weight:700; border-bottom:1px solid #e5e3dc;">Notifications</div>
+            <div class="notif-item">⚠️ Food budget reached 78% of monthly limit.</div>
+            <div class="notif-item">💡 Upcoming payment: Apartment Rent due Oct 1.</div>
+            <div class="notif-item">🏆 Goal 'New Laptop' reached 53% progress!</div>
+          </div>
+
+          <button class="quick-act-btn" onclick="openTransactionPanel('Expense')" style="padding:0.5rem 1rem; font-size:0.85rem;">
+            + Add Expense
+          </button>
+        </div>
+      </header>
+
+      <section id="view-dashboard" class="view-section active">
+        <div id="dashboardContent"></div>
+      </section>
+
+      <section id="view-transactions" class="view-section">
+        <div class="card-panel" style="margin-bottom:1.5rem;">
+          <div class="card-panel-header">
+            <h2 class="panel-title">Transactions Ledger</h2>
+            <button class="quick-act-btn" onclick="openTransactionPanel('Expense')" style="padding:0.4rem 0.8rem; font-size:0.85rem;">+ New Transaction</button>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+            <input type="text" id="txSearchInput" class="form-control" style="flex:1; min-width:200px;" placeholder="Search description, ID, category..." oninput="applyTransactionFilters()">
+            <select id="txTypeFilter" class="form-control" style="width:auto;" onchange="applyTransactionFilters()">
+              <option value="all">All Types</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
+            </select>
+            <select id="txCategoryFilter" class="form-control" style="width:auto;" onchange="applyTransactionFilters()">
+              <option value="all">All Categories</option>
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Bills">Bills</option>
+              <option value="Salary">Salary</option>
+              <option value="Freelance">Freelance</option>
+            </select>
+            <select id="txMethodFilter" class="form-control" style="width:auto;" onchange="applyTransactionFilters()">
+              <option value="all">All Payment Methods</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cash">Cash</option>
+            </select>
+            <select id="txSortFilter" class="form-control" style="width:auto;" onchange="applyTransactionFilters()">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="highest">Highest Amount</option>
+              <option value="lowest">Lowest Amount</option>
+            </select>
+          </div>
+
+          <div class="txns-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-budgets" class="view-section">
+        <div class="card-panel-header" style="margin-bottom:1.5rem;">
+          <h2 class="panel-title" style="font-size:1.5rem;">Monthly Category Budgets</h2>
+          <button class="quick-act-btn" onclick="openTransactionPanel('Expense')" style="padding:0.4rem 0.8rem; font-size:0.85rem;">+ Create Budget</button>
+        </div>
+        <div id="budgetsGrid" class="metrics-snapshot-grid"></div>
+      </section>
+
+      <section id="view-goals" class="view-section">
+        <div class="card-panel-header" style="margin-bottom:1.5rem;">
+          <h2 class="panel-title" style="font-size:1.5rem;">Savings Goals Tracker</h2>
+          <button class="quick-act-btn" onclick="openTransactionPanel('Income')" style="padding:0.4rem 0.8rem; font-size:0.85rem;">+ Add Goal</button>
+        </div>
+        <div id="goalsGrid" class="metrics-snapshot-grid"></div>
+      </section>
+
+      <section id="view-analytics" class="view-section">
+        <div class="card-panel-header" style="margin-bottom:1.5rem;">
+          <h2 class="panel-title" style="font-size:1.5rem;">Financial Analytics Workspace</h2>
+        </div>
+        <div id="analyticsContent"></div>
+      </section>
+
+      <section id="view-reports" class="view-section">
+        <div id="reportsContent"></div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <div id="slideOverlay" class="slide-panel-overlay" onclick="closeSlidePanel()"></div>
+  <div id="slidePanel" class="slide-panel">
+    <div class="panel-header">
+      <h2 id="slidePanelTitle">Action</h2>
+      <button class="btn-close-panel" onclick="closeSlidePanel()">&times;</button>
+    </div>
+    <div id="slidePanelBody" class="panel-body"></div>
+  </div>
+
+  <div id="quickActionModal" class="modal-overlay" onclick="if(event.target===this) closeQuickActionModal()">
+    <div class="command-modal">
+      <div style="display:flex; justify-space-between; align-items:center; margin-bottom:1rem;">
+        <h2 style="font-size:1.2rem; font-weight:800;">Command Quick Actions</h2>
+        <button onclick="closeQuickActionModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+      </div>
+      <div class="command-grid">
+        <div class="cmd-card-btn" onclick="closeQuickActionModal(); openTransactionPanel('Expense');">
+          <span class="cmd-icon">💸</span>
+          <span class="cmd-title">Add Expense</span>
+        </div>
+        <div class="cmd-card-btn" onclick="closeQuickActionModal(); openTransactionPanel('Income');">
+          <span class="cmd-icon">💰</span>
+          <span class="cmd-title">Add Income</span>
+        </div>
+        <div class="cmd-card-btn" onclick="closeQuickActionModal(); navigateTo('budgets');">
+          <span class="cmd-icon">🎯</span>
+          <span class="cmd-title">Category Budgets</span>
+        </div>
+        <div class="cmd-card-btn" onclick="closeQuickActionModal(); navigateTo('goals');">
+          <span class="cmd-icon">🏆</span>
+          <span class="cmd-title">Savings Goals</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block script %}{% endblock %}
+</body>
+</html>

@@ -90,11 +90,4 @@ finledger/
 
 ---
 
-## 📊 Complexity Analysis
 
-| Operation | Time Complexity | Space Complexity | Description |
-| :--- | :--- | :--- | :--- |
-| ID Lookup | $O(1)$ average | $O(1)$ | Hash dictionary lookup |
-| Transaction Search & Filter | $O(n)$ | $O(n)$ | Linear scan over stored records |
-| Category Aggregation | $O(n)$ | $O(k)$ | Aggregation over $k$ categories |
-| Dashboard Calculation | $O(n)$ | $O(1)$ | Dynamic metric calculations |
